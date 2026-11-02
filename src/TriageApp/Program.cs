@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
+using Microsoft.EntityFrameworkCore;
 using TriageApp.Components;
 using TriageApp.Data;
 using TriageApp.Services;
@@ -44,7 +46,7 @@ builder.Services.AddSingleton<QuizEngine>();
 
 // --- Database (SQL Server, with in-memory demo fallback) ---
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-    ?? "Server=localhost\SQLEXPRESS;Database=TriageApp;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+    ?? @"Server=localhost\SQLEXPRESS;Database=TriageApp;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
 var dbAvailable = await SqlServerChecker.TryConnectAsync(connectionString);
 

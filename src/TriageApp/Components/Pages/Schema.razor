@@ -1,5 +1,5 @@
 @page "/schema"
-@inject SchemaService Schema
+@inject SchemaService SchemaSvc
 
 <PageTitle>DB Schema — TriageApp</PageTitle>
 
@@ -59,6 +59,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         // null means SQL Server unreachable; the layout banner explains demo mode.
-        tables = await Schema.GetTablesAsync();
+        tables = await SchemaSvc.GetTablesAsync();
     }
 }

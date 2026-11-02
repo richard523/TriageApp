@@ -85,7 +85,7 @@ public class JiraService(IHttpClientFactory httpClientFactory) : IJiraService
             var http = httpClientFactory.CreateClient();
             SetAuth(http);
 
-            using var listResponse = await http.GetFromJsonAsync<JsonElement>($"{_baseUrl}/rest/api/3/issue/{issueKey}/transitions");
+            var listResponse = await http.GetFromJsonAsync<JsonElement>($"{_baseUrl}/rest/api/3/issue/{issueKey}/transitions");
             foreach (var t in listResponse.GetProperty("transitions").EnumerateArray())
             {
                 var name = t.GetProperty("name").GetString();

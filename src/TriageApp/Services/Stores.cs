@@ -187,9 +187,14 @@ public static class SqlServerChecker
     {
         try
         {
-            await using var conn = new SqlConnection(connectionString);
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            await conn.OpenAsync(cts.Token);
+            // Probe master: the TriageApp database does not exist yet on first run.
+            var builder = new SqlConnectionStringBuilder(connectionString)
+            {
+                InitialCatalog = "master",
+                ConnectTimeout = 5
+            };
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
             return true;
         }
         catch

@@ -22,7 +22,7 @@ public class QuizEngine
 
     public QuizEngine()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "quiz.json");
+        var path = Path.Combine(AppContext.BaseDirectory, "Data", "quiz.json");
         if (!File.Exists(path))
             throw new FileNotFoundException("quiz.json not found next to the application.", path);
 
