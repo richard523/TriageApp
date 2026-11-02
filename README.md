@@ -64,6 +64,12 @@ Questions are grounded in a real textbook:
 > Addison-Wesley, 2019 (ISBN 978-0135182130).
 
 Each question carries a chapter citation (see `src/TriageApp/Data/quiz.json`).
+The bank contains 500 questions generated from 60 core OOP concepts (encapsulation,
+inheritance, composition, polymorphism, interfaces, coupling, cohesion, object
+life cycle, frameworks, and more) across eight question styles: definition,
+term-recognition, benefit, example, code-snippet, anti-practice, myth-busting,
+and NOT-questions — plus curated textbook questions and code-output puzzles.
+
 Mastery rules, per the spec: you must answer a question correctly
 `QUIZ_MASTERY_THRESHOLD` times in a row to move on; a wrong answer resets the
 streak and sends you back to the start of the loop; progress is saved per user
