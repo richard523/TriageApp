@@ -1,0 +1,123 @@
+@page "/"
+@inject ArchitectureClassifier Classifier
+@inject ITriageStore TriageStore
+@inject IJiraService Jira
+@inject AppInfo AppInfo
+
+<PageTitle>Triage a feature request</PageTitle>
+
+<h1>Triage a feature request</h1>
+<p class="lead">
+    Type a feature request below. It gets classified into the architectural layer it most likely lands in,
+    and a Jira ticket is created automatically (when Jira is configured).
+</p>
+
+<div class="card">
+    <label class="field-label" for="feature-text">Feature request</label>
+    <textarea id="feature-text" class="textarea" rows="4" placeholder="e.g. Add a dashboard page with charts for monthly revenue, backed by a new database table…"
+              @bind="featureText" @bind:event="oninput"></textarea>
+    <div class="row gap">
+        <button class="btn btn-primary" @onclick="TriageAsync" disabled="@string.IsNullOrWhiteSpace(featureText)">
+            Triage &amp; create ticket
+        </button>
+        @if (busy)
+        {
+            <span class="muted">Working…</span>
+        }
+    </div>
+</div>
+
+@if (result is not null)
+{
+    <div class="card result-card">
+        <h2>Where it lands architecturally</h2>
+
+        <div class="arch-stack">
+            @foreach (var layer in Classifier.LayerNames)
+            {
+                var active = layer == result.Ticket.Layer;
+                <div class="arch-layer @(active ? "arch-active" : "")">
+                    <span>@layer</span>
+                    @if (active)
+                    {
+                        <span class="arch-badge">@(((int)(result.Ticket.Confidence * 100)) %) match</span>
+                    }
+                </div>
+            }
+        </div>
+
+        <p>@result.Classification.Rationale</p>
+
+        <div class="confidence">
+            <div class="confidence-bar"><div class="confidence-fill" style="width:@((int)(result.Ticket.Confidence * 100))%"></div></div>
+            <span class="muted">classifier confidence: @(((int)(result.Ticket.Confidence * 100)) %)</span>
+        </div>
+
+        <h3>Ticket</h3>
+        <p>
+            <strong>@result.Ticket.Summary</strong><br />
+            <span class="muted">Status: Submitted · Awaiting approval on the <a href="/approvals">Approvals</a> page</span>
+        </p>
+        @if (result.Ticket.JiraUrl is not null)
+        {
+            <p class="jira-ok">✅ Jira ticket created: <a href="@result.Ticket.JiraUrl" target="_blank">@result.Ticket.JiraKey</a></p>
+        }
+        else
+        {
+            <p class="jira-warn">⚠️ @result.Ticket.JiraError</p>
+        }
+    </div>
+}
+
+@if (errorMessage is not null)
+{
+    <div class="banner banner-warn">❌ @errorMessage</div>
+}
+
+@code {
+    private string featureText = "";
+    private bool busy;
+    private (Ticket Ticket, Classification Classification)? result;
+    private string? errorMessage;
+
+    private async Task TriageAsync()
+    {
+        busy = true;
+        errorMessage = null;
+        result = null;
+        try
+        {
+            var text = featureText.Trim();
+            var classification = Classifier.Classify(text);
+            var summary = text.Length <= 200 ? text : text[..200];
+
+            var ticket = await TriageStore.AddAsync(new Ticket
+            {
+                Summary = summary,
+                RawText = text,
+                Layer = classification.Layer,
+                Confidence = classification.Confidence,
+                MatchedKeywords = string.Join(", ", classification.MatchedKeywords),
+                Status = TicketStatus.Submitted,
+                CreatedAtUtc = DateTime.UtcNow
+            });
+
+            var jira = await Jira.CreateTicketAsync(ticket, classification);
+            await TriageStore.UpdateJiraAsync(ticket.Id, jira.Key, jira.Url, jira.Error);
+
+            ticket.JiraKey = jira.Key;
+            ticket.JiraUrl = jira.Url;
+            ticket.JiraError = jira.Error;
+
+            result = (ticket, classification);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Triage failed: {ex.Message}";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

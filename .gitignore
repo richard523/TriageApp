@@ -1,0 +1,14 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+
+# Secrets — never commit real credentials
+.env
+
+# IDE
+.idea/
+*.swp

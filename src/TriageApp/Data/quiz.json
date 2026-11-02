@@ -1,0 +1,221 @@
+{
+  "source": {
+    "title": "The Object-Oriented Thought Process",
+    "author": "Matt A. Weisfeld",
+    "edition": "5th Edition",
+    "publisher": "Addison-Wesley, 2019 (ISBN 978-0135182130)"
+  },
+  "masteryThreshold": 4,
+  "questions": [
+    {
+      "id": "encapsulation-bundle",
+      "topic": "Encapsulation",
+      "prompt": "Which statement best describes encapsulation?",
+      "options": [
+        "The object's data and the behaviors that operate on that data are combined into a single, self-contained unit.",
+        "The object's data is stored in a global table that any code can read and write.",
+        "The object inherits all its behaviors from a parent class.",
+        "The object is compiled into a separate binary from the rest of the program."
+      ],
+      "answerIndex": 0,
+      "explanation": "Weisfeld defines encapsulation as the mechanism that binds together the data (attributes) and the code (methods/behaviors) that acts on the data, keeping both safe from outside interference and misuse.",
+      "sourceChapter": "Ch. 1 — Introduction to Object-Oriented Concepts"
+    },
+    {
+      "id": "information-hiding",
+      "topic": "Information Hiding",
+      "prompt": "A class makes all its attributes private and exposes only the operations other objects truly need. Which OOP principle is this primarily demonstrating?",
+      "options": [
+        "Multiple inheritance",
+        "Information hiding",
+        "Method overloading",
+        "Garbage collection"
+      ],
+      "answerIndex": 1,
+      "explanation": "Weisfeld stresses that information hiding is the practice of hiding the internal structure and implementation details of an object: only the public interface is exposed, and attribute values are only changed via that interface.",
+      "sourceChapter": "Ch. 1 — Introduction to Object-Oriented Concepts"
+    },
+    {
+      "id": "abstraction-level",
+      "topic": "Abstraction",
+      "prompt": "Why does Weisfeld say the object-oriented 'thought process' requires thinking at a higher level of abstraction?",
+      "options": [
+        "Because object code runs faster than procedural code.",
+        "Because design models abstract away implementation details and represent the system as interacting objects.",
+        "Because compilers refuse to build procedural code.",
+        "Because abstraction removes the need for requirements."
+      ],
+      "answerIndex": 1,
+      "explanation": "The book's central premise: with OOP you first think in terms of the problem space — identifying objects, their responsibilities, and their interfaces — rather than diving straight into implementation details like you do with a procedural, top-down approach.",
+      "sourceChapter": "Ch. 1 — Introduction to Object-Oriented Concepts"
+    },
+    {
+      "id": "object-responsibility",
+      "topic": "Object Responsibility",
+      "prompt": "Weisfeld argues that a well-designed object should:",
+      "options": [
+        "Delegate all its work to a central controller object.",
+        "Be responsible for itself, carrying its own data and the behaviors that act on it.",
+        "Expose all attributes publicly so other objects can manage them.",
+        "Avoid interacting with any other object in the system."
+      ],
+      "answerIndex": 1,
+      "explanation": "A core guideline of thinking in terms of objects: each object should be responsible for itself — its own data and behavior — and interact with other objects only through well-defined public interfaces.",
+      "sourceChapter": "Ch. 2 — How to Think in Terms of Objects"
+    },
+    {
+      "id": "interface-vs-abstract",
+      "topic": "Interfaces vs Abstract Classes",
+      "prompt": "Which of the following is an accurate distinction between an interface and an abstract class?",
+      "options": [
+        "An abstract class can contain implemented behavior and state, while a traditional interface provides no implementation at all.",
+        "An interface can contain constructors, while an abstract class cannot.",
+        "You can instantiate an abstract class but not an interface.",
+        "There is no difference — they are interchangeable in every language."
+      ],
+      "answerIndex": 0,
+      "explanation": "In Weisfeld's treatment of frameworks and reuse, an abstract class can provide a partial implementation (fields, implemented methods) that subclasses build on, whereas a classic interface is a pure contract with no implementation. A class can also implement many interfaces but typically inherit only one class.",
+      "sourceChapter": "Ch. 8 — Frameworks and Reuse: Designing with Interfaces and Abstract Classes"
+    },
+    {
+      "id": "cannot-instantiate-abstract",
+      "topic": "Abstract Classes",
+      "prompt": "What happens if code tries to create an instance of an abstract class?",
+      "options": [
+        "It works — abstract classes are just regular classes with extra features.",
+        "It fails: abstract classes cannot be instantiated; they must be subclassed by concrete classes.",
+        "It works only if the abstract class has a default constructor.",
+        "It works only inside the same package or namespace."
+      ],
+      "answerIndex": 1,
+      "explanation": "An abstract class is a template for other classes. It cannot be instantiated directly because it may declare operations that have no implementation; concrete subclasses fill those in.",
+      "sourceChapter": "Ch. 8 — Frameworks and Reuse: Designing with Interfaces and Abstract Classes"
+    },
+    {
+      "id": "inheritance-is-a",
+      "topic": "Inheritance",
+      "prompt": "A Dog class is designed to extend an Animal class. Which relationship does this model?",
+      "options": [
+        "has-a",
+        "is-a",
+        "uses-a",
+        "knows-a"
+      ],
+      "answerIndex": 1,
+      "explanation": "Inheritance models the is-a relationship: a Dog is an Animal. Weisfeld covers inheritance as the primary mechanism for expressing is-a and generalization/specialization hierarchies.",
+      "sourceChapter": "Ch. 7 — Mastering Inheritance and Composition"
+    },
+    {
+      "id": "composition-has-a",
+      "topic": "Composition",
+      "prompt": "A Car class holds references to Engine and Wheel objects to do part of its work. Which relationship and mechanism is this?",
+      "options": [
+        "is-a, via inheritance",
+        "has-a, via composition",
+        "is-a, via polymorphism",
+        "has-a, via method overloading"
+      ],
+      "answerIndex": 1,
+      "explanation": "Composition expresses the has-a relationship: a Car has an Engine and has Wheels. Weisfeld treats inheritance and composition as the two fundamental ways classes relate, and devotes a chapter to choosing between them.",
+      "sourceChapter": "Ch. 7 — Mastering Inheritance and Composition"
+    },
+    {
+      "id": "prefer-composition",
+      "topic": "Design Judgment",
+      "prompt": "According to Weisfeld, when the relationship between two classes is NOT a true is-a relationship, what should you generally prefer?",
+      "options": [
+        "Inheritance anyway, since it reuses the most code.",
+        "Composition, because forcing is-a semantics breaks the model and couples classes tightly.",
+        "Global variables, so both classes can share state.",
+        "Copy-pasting the code between the two classes."
+      ],
+      "answerIndex": 1,
+      "explanation": "A classic guideline from the book: use inheritance only when a genuine is-a relationship exists; otherwise composition (possibly with delegation) is the better, more flexible design.",
+      "sourceChapter": "Ch. 7 — Mastering Inheritance and Composition"
+    },
+    {
+      "id": "polymorphism-many-forms",
+      "topic": "Polymorphism",
+      "prompt": "The same message sent to objects of different classes results in each object executing its own appropriate behavior. This is:",
+      "options": [
+        "Static binding",
+        "Polymorphism",
+        "Serialization",
+        "Encapsulation"
+      ],
+      "answerIndex": 1,
+      "explanation": "Polymorphism literally means 'many forms': identical interface, different behavior. Weisfeld shows that a single object can take on many forms, and a single message can invoke different implementations depending on the receiving object's actual class.",
+      "sourceChapter": "Ch. 1 — Introduction to Object-Oriented Concepts"
+    },
+    {
+      "id": "overloading-vs-overriding",
+      "topic": "Polymorphism Mechanics",
+      "prompt": "What is the key difference between method overloading and method overriding?",
+      "options": [
+        "Overloading reuses a method name with different signatures in the same class (compile-time); overriding redefines a superclass method in a subclass (runtime).",
+        "Overriding creates new method names; overloading renames existing ones.",
+        "They are identical — the terms are synonyms.",
+        "Overloading only happens in interfaces; overriding only happens in abstract classes."
+      ],
+      "answerIndex": 0,
+      "explanation": "Overloaded methods share a name but differ in parameter lists and are resolved at compile time. Overriding replaces a parent class's implementation of the same signature in a subclass and is resolved dynamically at run time — a key mechanism behind polymorphism.",
+      "sourceChapter": "Ch. 3 — Advanced Object-Oriented Concepts"
+    },
+    {
+      "id": "coupling",
+      "topic": "Coupling & Cohesion",
+      "prompt": "Why does Weisfeld advise keeping coupling between classes as low as possible?",
+      "options": [
+        "Low coupling makes it possible to change one class without breaking others that depend on it.",
+        "Low coupling reduces the size of compiled binaries.",
+        "Low coupling guarantees zero bugs in the codebase.",
+        "Low coupling increases the number of classes you must modify for each change."
+      ],
+      "answerIndex": 0,
+      "explanation": "Coupling is the degree to which one class depends on another. Tightly coupled classes must be understood, tested, and changed together; loose coupling keeps designs flexible and maintainable, which is why class design guidelines push toward minimizing it.",
+      "sourceChapter": "Ch. 5 — Class Design Guidelines"
+    },
+    {
+      "id": "cohesion",
+      "topic": "Coupling & Cohesion",
+      "prompt": "A class named FileManager also sends marketing emails and computes payroll. From a class-design standpoint, what is wrong?",
+      "options": [
+        "Nothing — bigger classes are always better.",
+        "It has low cohesion: it packs unrelated responsibilities into one class instead of a single, focused one.",
+        "It violates the rule that all methods must be static.",
+        "It is missing a UML diagram."
+      ],
+      "answerIndex": 1,
+      "explanation": "Cohesion measures how focused a class's responsibilities are. A class should do one thing well — the file manager should manage files. Unrelated responsibilities belong in separate, highly cohesive classes.",
+      "sourceChapter": "Ch. 5 — Class Design Guidelines"
+    },
+    {
+      "id": "static-members",
+      "topic": "Static vs Instance",
+      "prompt": "What distinguishes a static attribute or method from an instance one?",
+      "options": [
+        "A static member belongs to the class itself and is shared by all instances, not stored per object.",
+        "A static member can only be accessed from inside a constructor.",
+        "A static member exists only while a single object is alive.",
+        "A static member is always private in every language."
+      ],
+      "answerIndex": 0,
+      "explanation": "Weisfeld introduces static (class-level) members alongside instance members: a static attribute is shared by all objects of the class, and a static method can be invoked through the class without any instance.",
+      "sourceChapter": "Ch. 3 — Advanced Object-Oriented Concepts"
+    },
+    {
+      "id": "accessor-mutator",
+      "topic": "Class Design",
+      "prompt": "Why does Weisfeld recommend accessor and mutator methods (getters/setters) rather than exposing attributes directly?",
+      "options": [
+        "They let the class validate changes, hide the internal representation, and preserve the public interface even if the storage changes.",
+        "Getters and setters run faster than direct field access.",
+        "They are required by every compiler.",
+        "They eliminate the need for encapsulation entirely."
+      ],
+      "answerIndex": 0,
+      "explanation": "Accessors/mutators enforce information hiding: the class controls how its attributes are read and written, can validate inputs, and can change its internal storage later without breaking every caller.",
+      "sourceChapter": "Ch. 5 — Class Design Guidelines"
+    }
+  ]
+}

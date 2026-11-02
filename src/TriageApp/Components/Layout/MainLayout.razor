@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">
+                <span class="brand-mark">🎫</span>
+                <span>TriageApp</span>
+            </a>
+            <NavMenu />
+        </div>
+    </header>
+
+    @if (!AppInfo.DbAvailable)
+    {
+        <div class="banner banner-warn">
+            ⚠️ SQL Server is not reachable — running in <strong>demo mode</strong> (tickets &amp; quiz progress are in-memory and reset on restart).
+            Check <code>DB_CONNECTION_STRING</code> in <code>.env</code> and that the SQL Server (SQLEXPRESS) service is running.
+        </div>
+    }
+    @if (!AppInfo.AuthEnabled)
+    {
+        <div class="banner banner-info">
+            ℹ️ Microsoft sign-in is not configured — approvals are open to anyone. Set <code>MICROSOFT_CLIENT_ID</code> / <code>MICROSOFT_CLIENT_SECRET</code> in <code>.env</code> to lock it down.
+        </div>
+    }
+
+    <main class="main">
+        @Body
+    </main>
+
+    <footer class="footer">
+        TriageApp — ticket triage demo · OOP quiz questions from Weisfeld, <em>The Object-Oriented Thought Process</em> (5th ed., Addison-Wesley).
+    </footer>
+</div>

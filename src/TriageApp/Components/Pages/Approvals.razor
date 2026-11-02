@@ -1,0 +1,127 @@
+@page "/approvals"
+@inject ITriageStore TriageStore
+@inject IJiraService Jira
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AppInfo AppInfo
+@implements IDisposable
+
+<PageTitle>Approvals — TriageApp</PageTitle>
+
+<h1>Ticket approvals</h1>
+<p class="lead">Review incoming feature requests and decide which ones go forward.</p>
+
+@if (authRequiredWarning)
+{
+    <div class="banner banner-info">
+        🔒 Microsoft sign-in is required to approve or reject tickets. Use the Sign-in link in the header.
+    </div>
+}
+
+@if (tickets is null)
+{
+    <p class="muted">Loading…</p>
+}
+else if (tickets.Count == 0)
+{
+    <div class="card">No tickets yet — submit one from the <a href="/">Triage</a> page.</div>
+}
+else
+{
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Request</th>
+                    <th>Layer</th>
+                    <th>Jira</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in tickets)
+                {
+                    <tr>
+                        <td class="cell-summary">@ticket.Summary</td>
+                        <td><span class="pill">@ticket.Layer</span></td>
+                        <td>
+                            @if (ticket.JiraUrl is not null)
+                            {
+                                <a href="@ticket.JiraUrl" target="_blank">@ticket.JiraKey</a>
+                            }
+                            else if (ticket.JiraError is not null)
+                            {
+                                <span class="muted" title="@ticket.JiraError">—</span>
+                            }
+                            else
+                            {
+                                <span class="muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="status status-@ticket.Status.ToString().ToLowerInvariant()">@ticket.Status</span>
+                            @if (ticket.DecidedBy is not null)
+                            {
+                                <span class="muted small"> by @ticket.DecidedBy</span>
+                            }
+                        </td>
+                        <td class="muted">@ticket.CreatedAtUtc.ToLocalTime().ToString("g")</td>
+                        <td class="cell-actions">
+                            @if (ticket.Status == TicketStatus.Submitted)
+                            {
+                                <button class="btn btn-approve" @onclick="() => DecideAsync(ticket.Id, approve: true)">Approve</button>
+                                <button class="btn btn-reject" @onclick="() => DecideAsync(ticket.Id, approve: false)">Reject</button>
+                            }
+                            else
+                            {
+                                <span class="muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private IReadOnlyList<Ticket>? tickets;
+    private bool authRequiredWarning;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync() => tickets = await TriageStore.GetAllAsync();
+
+    private async Task DecideAsync(int id, bool approve)
+    {
+        var decidedBy = "anonymous";
+        if (AppInfo.AuthEnabled)
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (!auth.User.Identity?.IsAuthenticated ?? true)
+            {
+                authRequiredWarning = true;
+                return;
+            }
+            authRequiredWarning = false;
+            decidedBy = auth.User.Identity?.Name ?? "authenticated user";
+        }
+
+        var decided = await TriageStore.DecideAsync(id, approve, decidedBy);
+        if (decided)
+        {
+            // Best effort: move the linked Jira ticket too.
+            var ticket = (await TriageStore.GetAllAsync()).FirstOrDefault(t => t.Id == id);
+            if (ticket?.JiraKey is not null)
+            {
+                var transition = Environment.GetEnvironmentVariable(approve ? "JIRA_APPROVE_TRANSITION" : "JIRA_REJECT_TRANSITION");
+                if (!string.IsNullOrWhiteSpace(transition))
+                    await Jira.TransitionAsync(ticket.JiraKey, transition);
+            }
+        }
+        await LoadAsync();
+    }
+
+    public void Dispose() { }
+}

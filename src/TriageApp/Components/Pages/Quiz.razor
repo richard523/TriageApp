@@ -1,0 +1,192 @@
+@page "/quiz"
+@inject QuizEngine Quiz
+@inject IQuizStore QuizStore
+@inject AppInfo AppInfo
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@implements IDisposable
+
+<PageTitle>OOP Quiz — TriageApp</PageTitle>
+
+<h1>OOP mastery quiz</h1>
+<p class="lead">
+    Get each question right <strong>@Quiz.Data.MasteryThreshold times in a row</strong> to master it and move on.
+    A wrong answer resets the streak and restarts the loop. Questions are grounded in
+    @Quiz.Data.Source.Author, <em>@Quiz.Data.Source.Title</em> (@Quiz.Data.Source.Edition, @Quiz.Data.Source.Publisher).
+</p>
+
+@if (loadError is not null)
+{
+    <div class="banner banner-warn">❌ @loadError</div>
+}
+else if (currentQuestion is null)
+{
+    <div class="card done-card">
+        <h2>🎉 All questions mastered!</h2>
+        <p>You answered every question correctly @Quiz.Data.MasteryThreshold times in a row.</p>
+        <button class="btn btn-primary" @onclick="RestartAsync">Restart the quiz</button>
+    </div>
+}
+else
+{
+    <div class="progress-row">
+        <div class="progress-track">
+            <div class="progress-fill" style="width:@(((double)MasteredCount / Quiz.Data.Questions.Count) * 100)%"></div>
+        </div>
+        <span class="muted">@MasteredCount / @Quiz.Data.Questions.Count mastered</span>
+    </div>
+
+    <div class="card quiz-card">
+        <div class="quiz-meta">
+            <span class="pill">@currentQuestion.Topic</span>
+            <span class="muted small">@currentQuestion.SourceChapter</span>
+        </div>
+
+        <h2 class="quiz-prompt">@currentQuestion.Prompt</h2>
+
+        <div class="streak-row">
+            @for (var i = 0; i < Quiz.Data.MasteryThreshold; i++)
+            {
+                <span class="streak-dot @(i < currentStreak ? "on" : "")"></span>
+            }
+            <span class="muted small">streak: @currentStreak/@Quiz.Data.MasteryThreshold</span>
+        </div>
+
+        @if (feedback is null)
+        {
+            <div class="options">
+                @for (var i = 0; i < currentQuestion.Options.Count; i++)
+                {
+                    var index = i;
+                    <button class="option" @onclick="() => AnswerAsync(index)">@currentQuestion.Options[i]</button>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="feedback @(feedback.Correct ? "feedback-correct" : "feedback-wrong")">
+                <strong>@(feedback.Correct ? "✅ Correct!" : "❌ Not quite.")</strong>
+                @if (!feedback.Correct)
+                {
+                    <p>Correct answer: <strong>@currentQuestion.Options[currentQuestion.AnswerIndex]</strong></p>
+                }
+                <p>@currentQuestion.Explanation</p>
+                <p class="small muted">Source: @Quiz.Data.Source.Author, <em>@Quiz.Data.Source.Title</em> — @currentQuestion.SourceChapter</p>
+                <button class="btn btn-primary" @onclick="ContinueAsync">
+                    @(feedback.Correct ? "Next question →" : "Restart loop ↩")
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="row gap top-gap">
+        <button class="btn btn-secondary" @onclick="RestartAsync">Restart progress</button>
+        <span class="muted small">Signed in as @userId — progress is saved @(AppInfo.DbAvailable ? "in SQL Server" : "in memory (demo mode)")</span>
+    </div>
+}
+
+@code {
+    private string userId = "anonymous";
+    private string? loadError;
+    private int currentIndex;
+    private Dictionary<string, QuizProgress> progress = new();
+    private (bool Correct, bool GoHome)? feedback;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (auth.User.Identity?.IsAuthenticated ?? false)
+                userId = auth.User.Identity!.Name ?? "authenticated user";
+
+            var stored = await QuizStore.GetAsync(userId);
+            progress = stored.ToDictionary(p => p.QuestionId, StringComparer.Ordinal);
+            currentIndex = FirstUnmasteredIndex();
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Could not load quiz state: {ex.Message}";
+        }
+    }
+
+    private QuizQuestion? CurrentQuestion =>
+        currentIndex >= 0 && currentIndex < Quiz.Data.Questions.Count ? Quiz.Data.Questions[currentIndex] : null;
+
+    private QuizQuestion? currentQuestion;
+    private int currentStreak;
+
+    private int MasteredCount => Quiz.Data.Questions.Count(q => progress.TryGetValue(q.Id, out var p) && p.IsMastered);
+
+    private int FirstUnmasteredIndex()
+    {
+        for (var i = 0; i < Quiz.Data.Questions.Count; i++)
+        {
+            if (!progress.TryGetValue(Quiz.Data.Questions[i].Id, out var p) || !p.IsMastered)
+                return i;
+        }
+        return -1;
+    }
+
+    protected override void OnParametersSet()
+    {
+        SyncCurrent();
+    }
+
+    private void SyncCurrent()
+    {
+        currentQuestion = CurrentQuestion;
+        currentStreak = currentQuestion is not null && progress.TryGetValue(currentQuestion.Id, out var p)
+            ? p.CorrectStreak
+            : 0;
+    }
+
+    private async Task AnswerAsync(int optionIndex)
+    {
+        if (currentQuestion is null) return;
+
+        var correct = optionIndex == currentQuestion.AnswerIndex;
+        var entry = progress.TryGetValue(currentQuestion.Id, out var existing)
+            ? existing
+            : new QuizProgress { UserId = userId, QuestionId = currentQuestion.Id };
+
+        if (correct)
+        {
+            entry.CorrectStreak++;
+            if (entry.CorrectStreak >= Quiz.Data.MasteryThreshold)
+                entry.IsMastered = true;
+        }
+        else
+        {
+            // Quizlet-style "restart": a miss resets the streak and sends you
+            // back to the first unmastered question in the loop.
+            entry.CorrectStreak = 0;
+        }
+
+        entry.UpdatedAtUtc = DateTime.UtcNow;
+        progress[currentQuestion.Id] = entry;
+        await QuizStore.SaveAsync(entry);
+
+        feedback = (correct, GoHome: !correct || entry.IsMastered);
+        SyncCurrent();
+    }
+
+    private void ContinueAsync()
+    {
+        feedback = null;
+        currentIndex = FirstUnmasteredIndex();
+        SyncCurrent();
+        StateHasChanged();
+    }
+
+    private async Task RestartAsync()
+    {
+        await QuizStore.ResetAsync(userId);
+        progress = new();
+        feedback = null;
+        currentIndex = 0;
+        SyncCurrent();
+        StateHasChanged();
+    }
+
+    public void Dispose() { }
+}

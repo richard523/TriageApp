@@ -1,0 +1,24 @@
+@inject AppInfo AppInfo
+@inject AuthenticationStateProvider AuthState
+
+<nav class="nav">
+    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Triage</NavLink>
+    <NavLink class="nav-link" href="/approvals">Approvals</NavLink>
+    <NavLink class="nav-link" href="/schema">DB Schema</NavLink>
+    <NavLink class="nav-link" href="/quiz">OOP Quiz</NavLink>
+
+    @if (AppInfo.AuthEnabled)
+    {
+        <AuthorizeView>
+            <Authorized>
+                <span class="nav-user">
+                    👤 @context.User.Identity?.Name
+                    <a class="nav-link nav-link-auth" href="/logout">Sign out</a>
+                </span>
+            </Authorized>
+            <NotAuthorized>
+                <a class="nav-link nav-link-auth nav-link-cta" href="/login">Sign in with Microsoft</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    }
+</nav>
