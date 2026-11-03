@@ -61,7 +61,7 @@ Copy `.env.example` to `.env` and fill in what you need:
 Questions are grounded in a real textbook:
 
 > Matt A. Weisfeld, *The Object-Oriented Thought Process*, 5th Edition,
-> Addison-Wesley, 2019 (ISBN 978-0135182130).
+> Addison-Wesley, 2019 (ISBN 978-0135181966).
 
 Each question carries a chapter citation (see `src/TriageApp/Data/quiz.json`).
 The bank contains 500 questions generated from 60 core OOP concepts (encapsulation,
@@ -84,3 +84,15 @@ Infrastructure/Integration — with word-boundary keyword evidence and a
 confidence score. The layer is shown on the triage result, stored with the
 ticket, and attached to the Jira ticket as a label (`arch-…`) and in the
 description.
+
+## Credits
+
+The OOP quiz is grounded in:
+
+> **Matt A. Weisfeld, _The Object-Oriented Thought Process_ (Developer's Library), 5th Edition.**
+> Addison-Wesley / Pearson, 2019 · ISBN 978-0-13-518196-6
+
+- 📖 Buy the book (credit the author): [Amazon — The Object-Oriented Thought Process, 5th Edition](https://www.amazon.com/Object-Oriented-Thought-Process-Developers-Library/dp/0135181968)
+
+All quiz questions were written for this demo app and cite the book's chapters for further study.
+The book itself is © Pearson Education. If the quiz helps you, support the author by buying the book.
